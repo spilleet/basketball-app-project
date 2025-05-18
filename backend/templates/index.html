@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장애인 농구 앱</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #1e88e5;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+        .card-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            padding: 0.5rem 1rem;
+            background-color: #e3f2fd;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            margin-right: 2px;
+        }
+        .tab.active {
+            background-color: #1e88e5;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        button {
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1976d2;
+        }
+        form {
+            margin-top: 1rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>장애인 농구 앱</h1>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="courts">코트</div>
+            <div class="tab" data-tab="teams">팀</div>
+            <div class="tab" data-tab="games">경기</div>
+            <div class="tab" data-tab="users">사용자</div>
+        </div>
+        
+        <!-- 코트 탭 -->
+        <div class="tab-content active" id="courts-content">
+            <div class="card">
+                <div class="card-header">코트 목록</div>
+                <div id="courts-list">로딩 중...</div>
+                
+                <button onclick="toggleForm('add-court-form')">새 코트 추가</button>
+                <form id="add-court-form" style="display: none;">
+                    <h3>새 코트 등록</h3>
+                    <label for="court-name">코트 이름</label>
+                    <input type="text" id="court-name" required>
+                    
+                    <label for="court-address">주소</label>
+                    <input type="text" id="court-address" required>
+                    
+                    <label for="court-description">설명</label>
+                    <textarea id="court-description"></textarea>
+                    
+                    <button type="button" onclick="addCourt()">등록하기</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 팀 탭 -->
+        <div class="tab-content" id="teams-content">
+            <div class="card">
+                <div class="card-header">팀 목록</div>
+                <div id="teams-list">로딩 중...</div>
+                
+                <button onclick="toggleForm('add-team-form')">새 팀 추가</button>
+                <form id="add-team-form" style="display: none;">
+                    <h3>새 팀 등록</h3>
+                    <label for="team-name">팀 이름</label>
+                    <input type="text" id="team-name" required>
+                    
+                    <label for="team-description">설명</label>
+                    <textarea id="team-description"></textarea>
+                    
+                    <button type="button" onclick="addTeam()">등록하기</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 경기 탭 -->
+        <div class="tab-content" id="games-content">
+            <div class="card">
+                <div class="card-header">경기 일정</div>
+                <div id="games-list">로딩 중...</div>
+                
+                <button onclick="toggleForm('add-game-form')">새 경기 추가</button>
+                <form id="add-game-form" style="display: none;">
+                    <h3>새 경기 등록</h3>
+                    <label for="game-date">날짜 및 시간</label>
+                    <input type="datetime-local" id="game-date" required>
+                    
+                    <label for="game-court">코트</label>
+                    <select id="game-court" required></select>
+                    
+                    <label for="game-home-team">홈팀</label>
+                    <select id="game-home-team" required></select>
+                    
+                    <label for="game-away-team">어웨이팀</label>
+                    <select id="game-away-team" required></select>
+                    
+                    <input type="hidden" id="game-host" value="1"><!-- 간단하게 호스트 ID 1로 고정 -->
+                    
+                    <button type="button" onclick="addGame()">등록하기</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 사용자 탭 -->
+        <div class="tab-content" id="users-content">
+            <div class="card">
+                <div class="card-header">사용자 목록</div>
+                <div id="users-list">로딩 중...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 탭 전환 기능
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 탭 활성화
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 컨텐츠 활성화
+                const tabName = this.getAttribute('data-tab');
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-content`).classList.add('active');
+            });
+        });
+        
+        // 폼 토글 기능
+        function toggleForm(formId) {
+            const form = document.getElementById(formId);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // API 통신 함수
+        async function fetchAPI(url, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            
+            const response = await fetch(url, options);
+            return await response.json();
+        }
+        
+        // 코트 관련 함수
+        async function loadCourts() {
+            const courts = await fetchAPI('/api/courts');
+            const container = document.getElementById('courts-list');
+            
+            if (courts.length === 0) {
+                container.innerHTML = '<p>등록된 코트가 없습니다.</p>';
+                return;
+            }
+            
+            let html = '<table><tr><th>이름</th><th>주소</th><th>설명</th><th>작업</th></tr>';
+            courts.forEach(court => {
+                html += `
+                    <tr>
+                        <td>${court.name}</td>
+                        <td>${court.address}</td>
+                        <td>${court.description || '-'}</td>
+                        <td>
+                            <button onclick="deleteCourt(${court.id})">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+            
+            // 경기 등록 폼용 코트 옵션 로드
+            const courtSelect = document.getElementById('game-court');
+            if (courtSelect) {
+                courtSelect.innerHTML = '';
+                courts.forEach(court => {
+                    courtSelect.innerHTML += `<option value="${court.id}">${court.name}</option>`;
+                });
+            }
+        }
+        
+        async function addCourt() {
+            const name = document.getElementById('court-name').value;
+            const address = document.getElementById('court-address').value;
+            const description = document.getElementById('court-description').value;
+            
+            if (!name || !address) {
+                alert('이름과 주소는 필수입니다.');
+                return;
+            }
+            
+            try {
+                await fetchAPI('/api/courts', 'POST', {
+                    name,
+                    address,
+                    description
+                });
+                alert('코트가 추가되었습니다.');
+                document.getElementById('add-court-form').style.display = 'none';
+                document.getElementById('court-name').value = '';
+                document.getElementById('court-address').value = '';
+                document.getElementById('court-description').value = '';
+                loadCourts();
+            } catch (error) {
+                alert('코트 추가에 실패했습니다.');
+                console.error(error);
+            }
+        }
+        
+        async function deleteCourt(id) {
+            if (!confirm('정말로 이 코트를 삭제하시겠습니까?')) return;
+            
+            try {
+                await fetchAPI(`/api/courts/${id}`, 'DELETE');
+                alert('코트가 삭제되었습니다.');
+                loadCourts();
+            } catch (error) {
+                alert('코트 삭제에 실패했습니다.');
+                console.error(error);
+            }
+        }
+        
+        // 팀 관련 함수
+        async function loadTeams() {
+            const teams = await fetchAPI('/api/teams');
+            const container = document.getElementById('teams-list');
+            
+            if (teams.length === 0) {
+                container.innerHTML = '<p>등록된 팀이 없습니다.</p>';
+                return;
+            }
+            
+            let html = '<table><tr><th>이름</th><th>설명</th><th>멤버 수</th><th>작업</th></tr>';
+            teams.forEach(team => {
+                html += `
+                    <tr>
+                        <td>${team.name}</td>
+                        <td>${team.description || '-'}</td>
+                        <td>${team.member_ids ? team.member_ids.length : 0}</td>
+                        <td>
+                            <button onclick="deleteTeam(${team.id})">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+            
+            // 경기 등록 폼용 팀 옵션 로드
+            const homeTeamSelect = document.getElementById('game-home-team');
+            const awayTeamSelect = document.getElementById('game-away-team');
+            
+            if (homeTeamSelect && awayTeamSelect) {
+                homeTeamSelect.innerHTML = '';
+                awayTeamSelect.innerHTML = '';
+                
+                teams.forEach(team => {
+                    const option = `<option value="${team.id}">${team.name}</option>`;
+                    homeTeamSelect.innerHTML += option;
+                    awayTeamSelect.innerHTML += option;
+                });
+            }
+        }
+        
+        async function addTeam() {
+            const name = document.getElementById('team-name').value;
+            const description = document.getElementById('team-description').value;
+            
+            if (!name) {
+                alert('팀 이름은 필수입니다.');
+                return;
+            }
+            
+            try {
+                await fetchAPI('/api/teams', 'POST', {
+                    name,
+                    description
+                });
+                alert('팀이 추가되었습니다.');
+                document.getElementById('add-team-form').style.display = 'none';
+                document.getElementById('team-name').value = '';
+                document.getElementById('team-description').value = '';
+                loadTeams();
+            } catch (error) {
+                alert('팀 추가에 실패했습니다.');
+                console.error(error);
+            }
+        }
+        
+        async function deleteTeam(id) {
+            if (!confirm('정말로 이 팀을 삭제하시겠습니까?')) return;
+            
+            try {
+                await fetchAPI(`/api/teams/${id}`, 'DELETE');
+                alert('팀이 삭제되었습니다.');
+                loadTeams();
+            } catch (error) {
+                alert('팀 삭제에 실패했습니다.');
+                console.error(error);
+            }
+        }
+        
+        // 경기 관련 함수
+        async function loadGames() {
+            const games = await fetchAPI('/api/games');
+            const container = document.getElementById('games-list');
+            
+            if (games.length === 0) {
+                container.innerHTML = '<p>등록된 경기가 없습니다.</p>';
+                return;
+            }
+            
+            let html = '<table><tr><th>날짜</th><th>코트</th><th>홈팀</th><th>어웨이팀</th><th>상태</th><th>작업</th></tr>';
+            games.forEach(game => {
+                // 날짜 포맷팅
+                const date = new Date(game.date_time);
+                const formattedDate = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                
+                html += `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${game.court ? game.court.name : '알 수 없음'}</td>
+                        <td>${game.home_team ? game.home_team.name : '알 수 없음'}</td>
+                        <td>${game.away_team ? game.away_team.name : '알 수 없음'}</td>
+                        <td>${getStatusText(game.status)}</td>
+                        <td>
+                            <button onclick="deleteGame(${game.id})">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        }
+        
+        function getStatusText(status) {
+            switch(status) {
+                case 'SCHEDULED': return '예정됨';
+                case 'IN_PROGRESS': return '진행 중';
+                case 'COMPLETED': return '완료됨';
+                case 'CANCELLED': return '취소됨';
+                default: return status;
+            }
+        }
+        
+        async function addGame() {
+            const dateTime = document.getElementById('game-date').value;
+            const courtId = parseInt(document.getElementById('game-court').value);
+            const homeTeamId = parseInt(document.getElementById('game-home-team').value);
+            const awayTeamId = parseInt(document.getElementById('game-away-team').value);
+            const hostId = parseInt(document.getElementById('game-host').value);
+            
+            if (!dateTime) {
+                alert('날짜와 시간은 필수입니다.');
+                return;
+            }
+            
+            if (homeTeamId === awayTeamId) {
+                alert('홈팀과 어웨이팀은 같을 수 없습니다.');
+                return;
+            }
+            
+            try {
+                await fetchAPI('/api/games', 'POST', {
+                    date_time: new Date(dateTime).toISOString(),
+                    court_id: courtId,
+                    home_team_id: homeTeamId,
+                    away_team_id: awayTeamId,
+                    host_id: hostId,
+                    status: 'SCHEDULED'
+                });
+                alert('경기가 추가되었습니다.');
+                document.getElementById('add-game-form').style.display = 'none';
+                document.getElementById('game-date').value = '';
+                loadGames();
+            } catch (error) {
+                alert('경기 추가에 실패했습니다.');
+                console.error(error);
+            }
+        }
+        
+        async function deleteGame(id) {
+            if (!confirm('정말로 이 경기를 삭제하시겠습니까?')) return;
+            
+            try {
+                await fetchAPI(`/api/games/${id}`, 'DELETE');
+                alert('경기가 삭제되었습니다.');
+                loadGames();
+            } catch (error) {
+                alert('경기 삭제에 실패했습니다.');
+                console.error(error);
+            }
+        }
+        
+        // 사용자 관련 함수
+        async function loadUsers() {
+            const users = await fetchAPI('/api/users');
+            const container = document.getElementById('users-list');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p>등록된 사용자가 없습니다.</p>';
+                return;
+            }
+            
+            let html = '<table><tr><th>이름</th><th>이메일</th></tr>';
+            users.forEach(user => {
+                html += `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                    </tr>
+                `;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        }
+        
+        // 페이지 로드 시 데이터 불러오기
+        window.onload = function() {
+            loadCourts();
+            loadTeams();
+            loadGames();
+            loadUsers();
+        };
+    </script>
+</body>
+</html> 
