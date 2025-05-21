@@ -122,3 +122,6 @@ ENV/
 # db.json 
 
 node_modules/ 
+
+# Next.js
+.next/ 

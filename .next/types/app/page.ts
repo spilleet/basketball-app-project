@@ -1,4 +1,4 @@
-// File: /Users/idong-ug/Documents/플랩 장애인 농구/app/page.tsx
+// File: /Users/idong-ug/basketball-app-project/app/page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
